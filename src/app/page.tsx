@@ -6,62 +6,21 @@ import Link from 'next/link';
 type Post = {
     id: string;
     title: string;
-    from: string;
-    to: string;
+    startLocation: string;
+    endLocation: string;
     time: string;
-    contact: string;
-    message?: string;
     createdAt: number;
     status: 'active' | 'completed' | 'pinned';
 };
-
-const initialPosts: Post[] = [
-    {
-        id: '1',
-        title: 'Campus to Airport Carpool',
-        from: 'NEU Oakland',
-        to: 'SFO Airport',
-        time: '2025-04-20 14:00',
-        contact: 'wechat: johndoe123',
-        message: 'Can take two large suitcases',
-        createdAt: Date.now() - 1000000,
-        status: 'active',
-    },
-    {
-        id: '2',
-        title: 'Carpool to San Francisco for the Game',
-        from: 'NEU Oakland',
-        to: 'Chase Center',
-        time: '2025-04-22 17:00',
-        contact: 'tel: 123-456-7890',
-        message: 'Taking Highway 101',
-        createdAt: Date.now() - 500000,
-        status: 'active',
-    },
-    {
-        id: '3',
-        title: 'Return to Campus Carpool',
-        from: 'San Jose',
-        to: 'NEU Oakland',
-        time: '2025-04-25 10:00',
-        contact: 'email: user@example.com',
-        message: '',
-        createdAt: Date.now(),
-        status: 'active',
-    },
-];
 
 export default function HomePage() {
     const [posts, setPosts] = useState<Post[]>([]);
 
     useEffect(() => {
-        const saved = localStorage.getItem('posts');
-        if (saved) {
-            setPosts(JSON.parse(saved));
-        } else {
-            localStorage.setItem('posts', JSON.stringify(initialPosts));
-            setPosts(initialPosts);
-        }
+        fetch('/api/posts')
+            .then(res => res.json())
+            .then(data => setPosts(data))
+            .catch(err => console.error('Failed to fetch posts:', err));
     }, []);
 
     return (
@@ -101,11 +60,9 @@ export default function HomePage() {
                             >
                                 <div>
                                     <h2 className="text-lg font-semibold mb-2">{post.title}</h2>
-                                    <p><strong>Start:</strong> {post.from}</p>
-                                    <p><strong>End:</strong> {post.to}</p>
+                                    <p><strong>From:</strong> {post.startLocation}</p>
+                                    <p><strong>To:</strong> {post.endLocation}</p>
                                     <p><strong>Time:</strong> {post.time}</p>
-                                    <p><strong>Contact:</strong> {post.contact}</p>
-                                    {post.message && <p><strong>Note:</strong> {post.message}</p>}
                                 </div>
                                 <Link
                                     href={`/post/${post.id}`}

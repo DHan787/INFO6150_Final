@@ -13,10 +13,10 @@ const CreatePostPage: React.FC = () => {
     const [message, setMessage] = useState('');
     const [remarks, setRemarks] = useState('');
     // Handle form submission
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         const postData = {
-            id: Date.now().toString(), // 唯一 ID
+            id: Date.now().toString(),
             startLocation,
             endLocation,
             time,
@@ -27,12 +27,18 @@ const CreatePostPage: React.FC = () => {
             remarks,
             status: 'active',
         };
-        // localStorage
-        const existingPosts = JSON.parse(localStorage.getItem('posts') || '[]');
-        const updatedPosts = [...existingPosts, postData];
-        localStorage.setItem('posts', JSON.stringify(updatedPosts));   
-        //
-        router.push('/post');
+
+        const res = await fetch('/api/posts', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(postData),
+        });
+
+        if (res.ok) {
+            router.push('/post');
+        } else {
+            alert('Failed to create post.');
+        }
     };
     return (
         <div className="min-h-screen bg-gray-100">
