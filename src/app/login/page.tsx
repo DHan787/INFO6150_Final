@@ -18,6 +18,7 @@ const Page: React.FC = () => {
     };
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        console.log("handleSubmit used")
         const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
         const phonePattern = /^[0-9]{10,15}$/;
         let loginData;
@@ -32,7 +33,8 @@ const Page: React.FC = () => {
         }
         localStorage.setItem('jwt', 'simulated-jwt-token');
         alert('Login successful!');
-        router.push('/create');
+        localStorage.setItem('adminLoggedIn', 'true');
+        router.push('/admin');
     };
     const handleGuestModeClick = () => {
         localStorage.setItem('jwt', 'simulated-guest-jwt-token');
