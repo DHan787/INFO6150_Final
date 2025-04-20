@@ -1,7 +1,16 @@
+/*
+ * @Author: li wei wang
+ * @Date: 2025-04-19 11:57:58
+ * @Description: Changes in this update:
+ * 1.Import CSS to add bubbles and label gradient. 
+ * When the remaining time is less than one hour before the deadline, the label gradually turns pink,
+ * the number of bubbles increases until the label disappears.
+ */
 'use client';
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import '../styles/bubbles.css';
 
 type Post = {
     id: string;
@@ -12,17 +21,53 @@ type Post = {
     createdAt: number;
     status: 'active' | 'completed' | 'pinned';
 };
-
+type Bubble = {
+    postId: string;
+    left: number;
+    top: number;
+    id: string;
+};
 export default function HomePage() {
     const [posts, setPosts] = useState<Post[]>([]);
-
+    const [bubbles, setBubbles] = useState<Bubble[]>([]);
     useEffect(() => {
         fetch('/api/posts')
             .then(res => res.json())
             .then(data => setPosts(data))
             .catch(err => console.error('Failed to fetch posts:', err));
     }, []);
-
+    const handleAdminClick = () => {
+        window.location.href = '/login';
+    };
+    const calculateTimeDiff = (postTime: string) => {
+        return new Date(postTime).getTime() - Date.now();
+    };
+    // Bubble loop
+    useEffect(() => {
+        const interval = setInterval(() => {
+            const oneHour = 60 * 60 * 1000;
+            const activePost = posts
+                .filter(p => p.status !== 'completed')
+                .filter(p => {
+                    const diff = calculateTimeDiff(p.time);
+                    return diff > 0 && diff <= oneHour;
+                })
+                .sort((a, b) => calculateTimeDiff(a.time) - calculateTimeDiff(b.time))[0];
+            if (activePost) {
+                const newBubble: Bubble = {
+                    id: `${activePost.id}-${Math.random()}`,
+                    postId: activePost.id,
+                    left: Math.random() * 80,
+                    top: Math.random() * 80,
+                };
+                setBubbles(prev => [...prev, newBubble]);
+                setTimeout(() => {
+                    setBubbles(prev => prev.filter(b => b.id !== newBubble.id));
+                }, 2000);
+            }
+        }, 500);
+        return () => clearInterval(interval);
+    }, [posts]);
     return (
         <main className="min-h-screen bg-gray-50 flex flex-col">
             <header className="bg-gray-800 text-white flex justify-between items-center px-4 py-2">
@@ -31,50 +76,64 @@ export default function HomePage() {
                 </h1>
                 <button
                     className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 transition"
-                    onClick={() => {
-                        const isLoggedIn = localStorage.getItem('adminLoggedIn') === 'true';
-                        if (isLoggedIn) {
-                            window.location.href = '/admin';
-                        } else {
-                            window.location.href = '/login';
-                        }
-                    }}
+                    onClick={handleAdminClick}
                 >
                     Admin
                 </button>
             </header>
-
             <div className="flex-1 flex px-[15%] py-6">
                 <div className="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {posts
-                        .filter((p) => p.status !== 'completed')
-                        .sort((a, b) => {
-                            if (a.status === 'pinned' && b.status !== 'pinned') return -1;
-                            if (b.status === 'pinned' && a.status !== 'pinned') return 1;
-                            return b.createdAt - a.createdAt;
-                        })
-                        .map((post) => (
-                            <div
+                        .filter(p => p.status !== 'completed')
+                        .sort((a, b) => calculateTimeDiff(a.time) - calculateTimeDiff(b.time))
+                        .map(post => {
+                            const timeDiff = calculateTimeDiff(post.time);
+                            const oneHour = 60 * 60 * 1000;
+                            const isNearOneHour = timeDiff > 0 && timeDiff <= oneHour;
+                            const progress = isNearOneHour ? 1 - (timeDiff / oneHour) : 0;
+                            const yellow = { r: 252, g: 236, b: 150 };
+                            const pink = { r: 251, g: 207, b: 232 };                         
+                            const r = Math.round(yellow.r + (pink.r - yellow.r) * progress);
+                            const g = Math.round(yellow.g + (pink.g - yellow.g) * progress);
+                            const b = Math.round(yellow.b + (pink.b - yellow.b) * progress);                        
+                            const bgColor = `rgb(${r}, ${g}, ${b})`;
+                            if (timeDiff <= 0) return null;
+                            return (
+                                <div
                                 key={post.id}
-                                className="aspect-square bg-yellow-100 border border-yellow-300 rounded-lg p-4 shadow hover:shadow-lg transition flex flex-col justify-between"
-                            >
-                                <div>
-                                    <h2 className="text-lg font-semibold mb-2">{post.title}</h2>
-                                    <p><strong>From:</strong> {post.startLocation}</p>
-                                    <p><strong>To:</strong> {post.endLocation}</p>
-                                    <p><strong>Time:</strong> {post.time}</p>
-                                </div>
-                                <Link
-                                    href={`/post/${post.id}`}
-                                    className="text-blue-500 mt-2 hover:underline"
+                                className="aspect-square border border-yellow-300 rounded-lg p-4 shadow hover:shadow-lg transition flex flex-col justify-between relative"
+                                style={{ backgroundColor: bgColor }}
                                 >
-                                    View Details →
-                                </Link>
-                            </div>
-                        ))}
+                                    <div>
+                                        <h2 className="text-lg font-semibold mb-2">{post.title}</h2>
+                                        <p><strong>From:</strong> {post.startLocation}</p>
+                                        <p><strong>To:</strong> {post.endLocation}</p>
+                                        <p><strong>Time:</strong> {post.time}</p>
+                                    </div>
+                                    <Link
+                                        href={`/post/${post.id}`}
+                                        className="text-blue-500 mt-2 hover:underline"
+                                    >
+                                        View Details →
+                                    </Link>
+                                    {/* Bubble */}
+                                    {bubbles
+                                        .filter(b => b.postId === post.id)
+                                        .map(bubble => (
+                                            <div
+                                                key={bubble.id}
+                                                className="bubble"
+                                                style={{
+                                                    top: `${bubble.top}%`,
+                                                    left: `${bubble.left}%`,
+                                                }}
+                                            />
+                                        ))}
+                                </div>
+                            );
+                        })}
                 </div>
             </div>
-
             <footer className="bg-gray-800 text-white text-center py-4 mt-6">
                 <hr className="border-t-2 border-gray-500 mb-4" />
                 <div className="space-x-6">

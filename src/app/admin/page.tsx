@@ -1,6 +1,6 @@
-"use client";
-
-import { useEffect, useState } from "react";
+'use client';
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 type Post = {
     id: string;
@@ -17,13 +17,26 @@ type Post = {
 
 export default function AdminPage() {
     const [posts, setPosts] = useState<Post[]>([]);
+    const [loading, setLoading] = useState(true);  // Loading state
+    const router = useRouter();
 
     useEffect(() => {
-        fetch("/api/posts")
-            .then(res => res.json())
-            .then(data => setPosts(data))
-            .catch(err => console.error("Failed to fetch posts:", err));
-    }, []);
+        const isLoggedIn = localStorage.getItem('adminLoggedIn');
+        if (isLoggedIn !== 'true') {
+            router.push('/login');
+        } else {
+            fetch("/api/posts")
+                .then(res => res.json())
+                .then(data => {
+                    setPosts(data);
+                    setLoading(false);
+                })
+                .catch(err => {
+                    console.error("Failed to fetch posts:", err);
+                    setLoading(false);
+                });
+        }
+    }, [router]);
 
     const handleDelete = async (id: string) => {
         try {
@@ -42,11 +55,27 @@ export default function AdminPage() {
         }
     };
 
+    const calculateTimeDiff = (postTime: string) => {
+        const postDate = new Date(postTime);
+        const now = new Date();
+        const diff = postDate.getTime() - now.getTime();
+        return diff;
+    };
+
+    // Sort posts by time
+    const sortedPosts = posts.sort((a, b) => {
+        return new Date(b.time).getTime() - new Date(a.time).getTime();
+    });
+
+    if (loading) {
+        return <div className="min-h-screen flex justify-center items-center">Loading...</div>;
+    }
+
     return (
-        <main className="min-h-screen bg-gray-100 px-[15%] py-10">
+        <main className="min-h-screen bg-gray-100 px-[15%] py-10 relative">
             <button
                 className="mb-4 bg-gray-700 text-white px-4 py-2 rounded hover:bg-gray-600 transition"
-                onClick={() => window.location.href = '/'}
+                onClick={() => router.push('/')}
             >
                 ← Back to Home
             </button>
@@ -60,23 +89,28 @@ export default function AdminPage() {
             <section className="mb-10">
                 <h2 className="text-xl font-semibold mb-2">📝 User Posts</h2>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    {posts.map((post: Post) => (
-                        <div key={post.id} className="bg-white p-4 rounded shadow">
-                            <h3 className="font-bold">From: {post.startLocation} to {post.endLocation}</h3>
-                            <p>Time: {post.time}</p>
-                            <p>Contact: {post.message}</p>
-                            <div className="mt-2 flex justify-between">
-                                <button className="text-blue-600 hover:underline">Pin</button>
-                                <button className="text-green-600 hover:underline">Mark Complete</button>
-                                <button
-                                    className="text-red-600 hover:underline"
-                                    onClick={() => handleDelete(post.id)}
-                                >
-                                    Delete
-                                </button>
+                    {sortedPosts.map((post: Post) => {
+                        return (
+                            <div
+                                key={post.id}
+                                className="bg-white p-4 rounded shadow relative"
+                            >
+                                <h3 className="font-bold">From: {post.startLocation} to {post.endLocation}</h3>
+                                <p>Time: {post.time}</p>
+                                <p>Contact: {post.message}</p>
+                                <div className="mt-2 flex justify-between">
+                                    <button className="text-blue-600 hover:underline">Pin</button>
+                                    <button className="text-green-600 hover:underline">Mark Complete</button>
+                                    <button
+                                        className="text-red-600 hover:underline"
+                                        onClick={() => handleDelete(post.id)}
+                                    >
+                                        Delete
+                                    </button>
+                                </div>
                             </div>
-                        </div>
-                    ))}
+                        );
+                    })}
                 </div>
             </section>
 
