@@ -6,7 +6,6 @@
  */
 'use client';
 import React, { useState, useEffect, useCallback } from 'react';
-import Layout from '../components/layout';
 interface PostData {
     id: string;
     startLocation: string;
@@ -65,71 +64,69 @@ const PostListPage: React.FC = () => {
     const calculateTimeDifference = (start: string, end: string) => {
         const startTime = new Date(start);
         const endTime = new Date(end);
-        const diffInMs = endTime.getTime() - startTime.getTime();    
+        const diffInMs = endTime.getTime() - startTime.getTime();
         // Convert milliseconds to hours and minutes
         const hours = Math.floor(diffInMs / (1000 * 60 * 60));
         const minutes = Math.floor((diffInMs % (1000 * 60 * 60)) / (1000 * 60));
         return `${hours}h ${minutes}m`;
     };
     return (
-        <Layout>
-            <div className="min-h-screen p-6">
-                <h1 className="text-3xl font-bold mb-4">My Posts</h1>
-                {posts.length === 0 ? (
-                    <p>No posts available</p>
-                ) : (
-                    <div className="space-y-4">
-                        {posts.map((post) => (
-                            <div key={post.id} className="bg-white p-4 rounded shadow-md space-y-2">
-                                <div className="flex flex-wrap gap-6">
-                                    <div className="flex-1">
-                                        <p><strong>Start Location:</strong> {post.startLocation}</p>
-                                        <p><strong>End Location:</strong> {post.endLocation}</p>
-                                        <p><strong>Start Time:</strong> {formatTime(post.startTime)}</p>
-                                        <p><strong>End Time:</strong> {formatTime(post.endTime)}</p>
-                                        <p><strong>Estimated Time:</strong> {calculateTimeDifference(post.startTime, post.endTime)}</p>
-                                        <p><strong>Car Model:</strong> {post.carModel}</p>
-                                        <p><strong>Car Year:</strong> {post.carYear}</p>
-                                    </div>
-                                    <div className="flex-1">
-                                        <p><strong>Car Color:</strong>
-                                            <span
-                                                className="inline-block w-6 h-6 rounded-full ml-2"
-                                                style={{ backgroundColor: post.carColor }}
-                                            ></span>
-                                        </p>
-                                        <p><strong>Message:</strong> {post.message}</p>
-                                        <p><strong>Remarks:</strong> {post.remarks}</p>
-                                        <p><strong>Status:</strong> {post.status}</p>
-                                    </div>
+        <div className="min-h-screen p-6">
+            <h1 className="text-3xl font-bold mb-4">My Posts</h1>
+            {posts.length === 0 ? (
+                <p>No posts available</p>
+            ) : (
+                <div className="space-y-4">
+                    {posts.map((post) => (
+                        <div key={post.id} className="bg-white p-4 rounded shadow-md space-y-2">
+                            <div className="flex flex-wrap gap-6">
+                                <div className="flex-1">
+                                    <p><strong>Start Location:</strong> {post.startLocation}</p>
+                                    <p><strong>End Location:</strong> {post.endLocation}</p>
+                                    <p><strong>Start Time:</strong> {formatTime(post.startTime)}</p>
+                                    <p><strong>End Time:</strong> {formatTime(post.endTime)}</p>
+                                    <p><strong>Estimated Time:</strong> {calculateTimeDifference(post.startTime, post.endTime)}</p>
+                                    <p><strong>Car Model:</strong> {post.carModel}</p>
+                                    <p><strong>Car Year:</strong> {post.carYear}</p>
                                 </div>
-                                <div className="flex gap-2 mt-2">
-                                    <button
-                                        onClick={() => handleDelete(post.id)}
-                                        className="bg-black text-white px-2 py-1 rounded"
-                                    >
-                                        Delete
-                                    </button>
-                                    <button
-                                        onClick={() => handleComplete(post.id)}
-                                        className="bg-gray-400 text-black px-2 py-1 rounded"
-                                    >
-                                        Complete
-                                    </button>
-                                    <button
-                                        onClick={() => handlePin(post.id)}
-                                        style={{ backgroundColor: 'rgb(209, 75, 121)' }}
-                                        className="text-white px-2 py-1 rounded"
-                                    >
-                                        Pin
-                                    </button>
+                                <div className="flex-1">
+                                    <p><strong>Car Color:</strong>
+                                        <span
+                                            className="inline-block w-6 h-6 rounded-full ml-2"
+                                            style={{ backgroundColor: post.carColor }}
+                                        ></span>
+                                    </p>
+                                    <p><strong>Message:</strong> {post.message}</p>
+                                    <p><strong>Remarks:</strong> {post.remarks}</p>
+                                    <p><strong>Status:</strong> {post.status}</p>
                                 </div>
                             </div>
-                        ))}
-                    </div>
-                )}
-            </div>
-        </Layout>
+                            <div className="flex gap-2 mt-2">
+                                <button
+                                    onClick={() => handleDelete(post.id)}
+                                    className="bg-black text-white px-2 py-1 rounded"
+                                >
+                                    Delete
+                                </button>
+                                <button
+                                    onClick={() => handleComplete(post.id)}
+                                    className="bg-gray-400 text-black px-2 py-1 rounded"
+                                >
+                                    Complete
+                                </button>
+                                <button
+                                    onClick={() => handlePin(post.id)}
+                                    style={{ backgroundColor: 'rgb(209, 75, 121)' }}
+                                    className="text-white px-2 py-1 rounded"
+                                >
+                                    Pin
+                                </button>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            )}
+        </div>
     );
 };
 

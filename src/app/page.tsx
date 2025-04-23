@@ -70,17 +70,6 @@ export default function HomePage() {
     }, [posts]);
     return (
         <main className="min-h-screen bg-gray-50 flex flex-col">
-            <header className="bg-gray-800 text-white flex justify-between items-center px-4 py-2">
-                <h1 className="text-2xl font-extrabold text-custom-red" style={{ fontFamily: 'Lobster, cursive' }}>
-                    Pin Car
-                </h1>
-                <button
-                    className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 transition"
-                    onClick={handleAdminClick}
-                >
-                    Admin
-                </button>
-            </header>
             <div className="flex-1 flex px-[15%] py-6">
                 <div className="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {posts
@@ -92,17 +81,17 @@ export default function HomePage() {
                             const isNearOneHour = timeDiff > 0 && timeDiff <= oneHour;
                             const progress = isNearOneHour ? 1 - (timeDiff / oneHour) : 0;
                             const yellow = { r: 252, g: 236, b: 150 };
-                            const pink = { r: 251, g: 207, b: 232 };                         
+                            const pink = { r: 251, g: 207, b: 232 };
                             const r = Math.round(yellow.r + (pink.r - yellow.r) * progress);
                             const g = Math.round(yellow.g + (pink.g - yellow.g) * progress);
-                            const b = Math.round(yellow.b + (pink.b - yellow.b) * progress);                        
+                            const b = Math.round(yellow.b + (pink.b - yellow.b) * progress);
                             const bgColor = `rgb(${r}, ${g}, ${b})`;
                             if (timeDiff <= 0) return null;
                             return (
                                 <div
-                                key={post.id}
-                                className="aspect-square border border-yellow-300 rounded-lg p-4 shadow hover:shadow-lg transition flex flex-col justify-between relative"
-                                style={{ backgroundColor: bgColor }}
+                                    key={post.id}
+                                    className="aspect-square border border-yellow-300 rounded-lg p-4 shadow hover:shadow-lg transition flex flex-col justify-between relative"
+                                    style={{ backgroundColor: bgColor }}
                                 >
                                     <div>
                                         <h2 className="text-lg font-semibold mb-2">{post.title}</h2>
@@ -134,17 +123,6 @@ export default function HomePage() {
                         })}
                 </div>
             </div>
-            <footer className="bg-gray-800 text-white text-center py-4 mt-6">
-                <hr className="border-t-2 border-gray-500 mb-4" />
-                <div className="space-x-6">
-                    <a href="/conditions-of-use" className="text-sm hover:underline">Conditions of Use</a>
-                    <a href="/privacy-notice" className="text-sm hover:underline">Privacy Notice</a>
-                    <a href="/help" className="text-sm hover:underline">Help</a>
-                </div>
-                <div className="mt-4 text-sm">
-                    © 2025, Pin Car.com
-                </div>
-            </footer>
         </main>
     );
 }

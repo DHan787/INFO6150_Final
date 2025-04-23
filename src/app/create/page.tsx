@@ -12,7 +12,6 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import carModels from '../../data/carModels.json';
-import Layout from '../components/layout';
 const CreatePostPage: React.FC = () => {
     const router = useRouter();
     const [startLocation, setStartLocation] = useState('');
@@ -106,179 +105,177 @@ const CreatePostPage: React.FC = () => {
         }
     };
     return (
-        <Layout>
-            <div>
-                <div className="w-full max-w-lg mx-auto p-6 bg-white rounded-lg shadow-lg mt-10">
-                    <h2 className="text-2xl font-bold text-center mb-6">Create Form</h2>
-                    <form onSubmit={handleSubmit} className="space-y-4">
-                        {/* Start Location */}
-                        <div>
-                            <label htmlFor="startLocation" className="block text-sm font-medium text-gray-700">Start Location</label>
-                            <input
-                                type="text"
-                                id="startLocation"
-                                value={startLocation}
+        <div>
+            <div className="w-full max-w-lg mx-auto p-6 bg-white rounded-lg shadow-lg mt-10">
+                <h2 className="text-2xl font-bold text-center mb-6">Create Form</h2>
+                <form onSubmit={handleSubmit} className="space-y-4">
+                    {/* Start Location */}
+                    <div>
+                        <label htmlFor="startLocation" className="block text-sm font-medium text-gray-700">Start Location</label>
+                        <input
+                            type="text"
+                            id="startLocation"
+                            value={startLocation}
+                            onChange={(e) => {
+                                setStartLocation(e.target.value);
+                                const err = validateLocation(e.target.value);
+                                setErrors((prev: unknown) => ({ ...prev, startLocation: err }));
+                            }}
+                            className="w-full p-2.5 border border-gray-300 rounded-md"
+                            placeholder="Enter start location"
+                            required
+                        />
+                        {errors.startLocation && <span className="text-red-500 text-xs">{errors.startLocation}</span>}
+                    </div>
+                    {/* End Location */}
+                    <div>
+                        <label htmlFor="endLocation" className="block text-sm font-medium text-gray-700">End Location</label>
+                        <input
+                            type="text"
+                            id="endLocation"
+                            value={endLocation}
+                            onChange={(e) => {
+                                setEndLocation(e.target.value);
+                                const err = validateLocation(e.target.value);
+                                setErrors((prev: unknown) => ({ ...prev, endLocation: err }));
+                            }}
+                            className="w-full p-2.5 border border-gray-300 rounded-md"
+                            placeholder="Enter end location"
+                            required
+                        />
+                        {errors.endLocation && <span className="text-red-500 text-xs">{errors.endLocation}</span>}
+                    </div>
+                    {/* Start & End Time */}
+                    <div>
+                        <label htmlFor="startTime" className="block text-sm font-medium text-gray-700">Start Time</label>
+                        <input
+                            type="datetime-local"
+                            id="startTime"
+                            value={startTime}
+                            onChange={(e) => setStartTime(e.target.value)}
+                            className="w-full p-2.5 border border-gray-300 rounded-md"
+                            min={localNow}
+                            required
+                        />
+                    </div>
+                    <div>
+                        <label htmlFor="endTime" className="block text-sm font-medium text-gray-700">End Time</label>
+                        <input
+                            type="datetime-local"
+                            id="endTime"
+                            value={endTime}
+                            onChange={(e) => setEndTime(e.target.value)}
+                            className="w-full p-2.5 border border-gray-300 rounded-md"
+                            min={localNow}
+                            required
+                        />
+                    </div>
+                    {/* Car Brand & Model */}
+                    <div className="flex space-x-4">
+                        <div className="w-1/2">
+                            <label htmlFor="carBrand" className="block text-sm font-medium text-gray-700">Car Brand</label>
+                            <select
+                                id="carBrand"
+                                value={carBrand}
                                 onChange={(e) => {
-                                    setStartLocation(e.target.value);
-                                    const err = validateLocation(e.target.value);
-                                    setErrors((prev: unknown) => ({ ...prev, startLocation: err }));
+                                    setCarBrand(e.target.value);
+                                    setCarModel('');
                                 }}
                                 className="w-full p-2.5 border border-gray-300 rounded-md"
-                                placeholder="Enter start location"
                                 required
-                            />
-                            {errors.startLocation && <span className="text-red-500 text-xs">{errors.startLocation}</span>}
+                            >
+                                <option value="">Select Brand</option>
+                                {Object.keys(carModels).map(brand => (
+                                    <option key={brand} value={brand}>{brand}</option>
+                                ))}
+                            </select>
                         </div>
-                        {/* End Location */}
-                        <div>
-                            <label htmlFor="endLocation" className="block text-sm font-medium text-gray-700">End Location</label>
+                        <div className="w-1/2">
+                            <label htmlFor="carModel" className="block text-sm font-medium text-gray-700">Car Model</label>
+                            <select
+                                id="carModel"
+                                value={carModel}
+                                onChange={(e) => setCarModel(e.target.value)}
+                                className="w-full p-2.5 border border-gray-300 rounded-md"
+                                required
+                                disabled={!carBrand}
+                            >
+                                <option value="">Select Model</option>
+                                {carBrand && carModels[carBrand].map((model: string) => (
+                                    <option key={model} value={model}>{model}</option>
+                                ))}
+                            </select>
+                        </div>
+                    </div>
+                    {/* Car Year & Color */}
+                    <div className="flex space-x-4">
+                        <div className="w-1/2">
+                            <label htmlFor="carYear" className="block text-sm font-medium text-gray-700">Car Year</label>
                             <input
                                 type="text"
-                                id="endLocation"
-                                value={endLocation}
+                                id="carYear"
+                                value={carYear}
                                 onChange={(e) => {
-                                    setEndLocation(e.target.value);
-                                    const err = validateLocation(e.target.value);
-                                    setErrors((prev: unknown) => ({ ...prev, endLocation: err }));
+                                    setCarYear(e.target.value);
+                                    const err = validateCarYear(e.target.value);
+                                    setErrors((prev: unknown) => ({ ...prev, carYear: err }));
                                 }}
                                 className="w-full p-2.5 border border-gray-300 rounded-md"
-                                placeholder="Enter end location"
+                                placeholder="Enter car year"
                                 required
                             />
-                            {errors.endLocation && <span className="text-red-500 text-xs">{errors.endLocation}</span>}
+                            {errors.carYear && <span className="text-red-500 text-xs">{errors.carYear}</span>}
                         </div>
-                        {/* Start & End Time */}
-                        <div>
-                            <label htmlFor="startTime" className="block text-sm font-medium text-gray-700">Start Time</label>
-                            <input
-                                type="datetime-local"
-                                id="startTime"
-                                value={startTime}
-                                onChange={(e) => setStartTime(e.target.value)}
+                        <div className="w-1/2">
+                            <label htmlFor="carColor" className="block text-sm font-medium text-gray-700">Car Color</label>
+                            <select
+                                id="carColor"
+                                value={carColor}
+                                onChange={(e) => {
+                                    setCarColor(e.target.value);
+                                    const err = validateCarColor(e.target.value);
+                                    setErrors(prev => ({ ...prev, carColor: err }));
+                                }}
                                 className="w-full p-2.5 border border-gray-300 rounded-md"
-                                min={localNow}
                                 required
-                            />
+                            >
+                                <option value="">Select car color</option>
+                                {validColors.map(color => (
+                                    <option key={color} value={color}>{color}</option>
+                                ))}
+                            </select>
+                            {errors.carColor && <span className="text-red-500 text-xs">{errors.carColor}</span>}
                         </div>
-                        <div>
-                            <label htmlFor="endTime" className="block text-sm font-medium text-gray-700">End Time</label>
-                            <input
-                                type="datetime-local"
-                                id="endTime"
-                                value={endTime}
-                                onChange={(e) => setEndTime(e.target.value)}
-                                className="w-full p-2.5 border border-gray-300 rounded-md"
-                                min={localNow}
-                                required
-                            />
-                        </div>
-                        {/* Car Brand & Model */}
-                        <div className="flex space-x-4">
-                            <div className="w-1/2">
-                                <label htmlFor="carBrand" className="block text-sm font-medium text-gray-700">Car Brand</label>
-                                <select
-                                    id="carBrand"
-                                    value={carBrand}
-                                    onChange={(e) => {
-                                        setCarBrand(e.target.value);
-                                        setCarModel('');
-                                    }}
-                                    className="w-full p-2.5 border border-gray-300 rounded-md"
-                                    required
-                                >
-                                    <option value="">Select Brand</option>
-                                    {Object.keys(carModels).map(brand => (
-                                        <option key={brand} value={brand}>{brand}</option>
-                                    ))}
-                                </select>
-                            </div>
-                            <div className="w-1/2">
-                                <label htmlFor="carModel" className="block text-sm font-medium text-gray-700">Car Model</label>
-                                <select
-                                    id="carModel"
-                                    value={carModel}
-                                    onChange={(e) => setCarModel(e.target.value)}
-                                    className="w-full p-2.5 border border-gray-300 rounded-md"
-                                    required
-                                    disabled={!carBrand}
-                                >
-                                    <option value="">Select Model</option>
-                                    {carBrand && carModels[carBrand].map((model: string) => (
-                                        <option key={model} value={model}>{model}</option>
-                                    ))}
-                                </select>
-                            </div>
-                        </div>
-                        {/* Car Year & Color */}
-                        <div className="flex space-x-4">
-                            <div className="w-1/2">
-                                <label htmlFor="carYear" className="block text-sm font-medium text-gray-700">Car Year</label>
-                                <input
-                                    type="text"
-                                    id="carYear"
-                                    value={carYear}
-                                    onChange={(e) => {
-                                        setCarYear(e.target.value);
-                                        const err = validateCarYear(e.target.value);
-                                        setErrors((prev: unknown) => ({ ...prev, carYear: err }));
-                                    }}
-                                    className="w-full p-2.5 border border-gray-300 rounded-md"
-                                    placeholder="Enter car year"
-                                    required
-                                />
-                                {errors.carYear && <span className="text-red-500 text-xs">{errors.carYear}</span>}
-                            </div>
-                            <div className="w-1/2">
-                                <label htmlFor="carColor" className="block text-sm font-medium text-gray-700">Car Color</label>
-                                <select
-                                    id="carColor"
-                                    value={carColor}
-                                    onChange={(e) => {
-                                        setCarColor(e.target.value);
-                                        const err = validateCarColor(e.target.value);
-                                        setErrors(prev => ({ ...prev, carColor: err }));
-                                    }}
-                                    className="w-full p-2.5 border border-gray-300 rounded-md"
-                                    required
-                                >
-                                    <option value="">Select car color</option>
-                                    {validColors.map(color => (
-                                        <option key={color} value={color}>{color}</option>
-                                    ))}
-                                </select>
-                                {errors.carColor && <span className="text-red-500 text-xs">{errors.carColor}</span>}
-                            </div>
-                        </div>
-                        {/* Message & Remarks */}
-                        <div>
-                            <label htmlFor="message" className="block text-sm font-medium text-gray-700">Message</label>
-                            <textarea
-                                id="message"
-                                value={message}
-                                onChange={(e) => setMessage(e.target.value)}
-                                className="w-full p-2.5 border border-gray-300 rounded-md"
-                                placeholder="Enter a message"
-                            />
-                        </div>
-                        <div>
-                            <label htmlFor="remarks" className="block text-sm font-medium text-gray-700">Remarks</label>
-                            <textarea
-                                id="remarks"
-                                value={remarks}
-                                onChange={(e) => setRemarks(e.target.value)}
-                                className="w-full p-2.5 border border-gray-300 rounded-md"
-                                placeholder="Enter any remarks"
-                            />
-                        </div>
-                        <div>
-                            <button type="submit" className="w-full bg-black text-white p-2 rounded-md">
-                                Submit
-                            </button>
-                        </div>
-                    </form>
-                </div>
+                    </div>
+                    {/* Message & Remarks */}
+                    <div>
+                        <label htmlFor="message" className="block text-sm font-medium text-gray-700">Message</label>
+                        <textarea
+                            id="message"
+                            value={message}
+                            onChange={(e) => setMessage(e.target.value)}
+                            className="w-full p-2.5 border border-gray-300 rounded-md"
+                            placeholder="Enter a message"
+                        />
+                    </div>
+                    <div>
+                        <label htmlFor="remarks" className="block text-sm font-medium text-gray-700">Remarks</label>
+                        <textarea
+                            id="remarks"
+                            value={remarks}
+                            onChange={(e) => setRemarks(e.target.value)}
+                            className="w-full p-2.5 border border-gray-300 rounded-md"
+                            placeholder="Enter any remarks"
+                        />
+                    </div>
+                    <div>
+                        <button type="submit" className="w-full bg-black text-white p-2 rounded-md">
+                            Submit
+                        </button>
+                    </div>
+                </form>
             </div>
-        </Layout>
+        </div>
     );
 };
 export default CreatePostPage;
