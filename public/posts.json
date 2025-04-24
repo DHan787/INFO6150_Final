@@ -1,17 +1,5 @@
 [
   {
-    "id": "4",
-    "startLocation": "Oakland",
-    "endLocation": "San Francisco",
-    "time": "2025-04-23T10:00",
-    "carModel": "Ford Fusion",
-    "carYear": "2018",
-    "carColor": "Silver",
-    "message": "Reach me via Telegram: ford_ride",
-    "remarks": "Can bring pets",
-    "status": "pinned"
-  },
-  {
     "id": "1744760515710",
     "startLocation": "213",
     "endLocation": "123",
@@ -141,19 +129,7 @@
     "carColor": "blue",
     "message": "",
     "remarks": "",
-    "status": "active"
-  },
-  {
-    "id": "1745027642934",
-    "startLocation": "ok",
-    "endLocation": "3",
-    "time": "2025-04-18T18:51",
-    "carModel": "tesla",
-    "carYear": "1900",
-    "carColor": "blue",
-    "message": "",
-    "remarks": "",
-    "status": "active"
+    "status": "pinned"
   },
   {
     "id": "1745127999490",
