@@ -52,20 +52,20 @@ export default async function PostDetailPage({ params }: { params: { id: string 
     };
 
     return (
-        <main className="min-h-screen bg-gray-100 py-10 px-4 sm:px-6 lg:px-8">
-            <div className="max-w-3xl mx-auto bg-white p-8 shadow-md rounded-md">
-                <h1 className="text-3xl font-bold mb-4">Post Details</h1>
-                <p><strong>Start Location:</strong> {post.startLocation}</p>
-                <p><strong>End Location:</strong> {post.endLocation}</p>
-                <p><strong>Start Time:</strong> {formatTime(post.startTime)}</p>
-                <p><strong>End Time:</strong> {formatTime(post.endTime)}</p>
-                <p><strong>Estimated Time:</strong> {calculateTimeDifference(post.startTime, post.endTime)}</p>
-                <p><strong>Car Model:</strong> {post.carModel}</p>
-                <p><strong>Car Year:</strong> {post.carYear}</p>
-                <p><strong>Car Color:</strong> <span className="inline-block w-6 h-6 rounded-full ml-2" style={{ backgroundColor: post.carColor }}></span></p>
-                <p><strong>Message:</strong> {post.message}</p>
-                <p><strong>Remarks:</strong> {post.remarks}</p>
-                <p><strong>Status:</strong> {post.status}</p>
+        <main className="min-h-screen bg-gray-50 py-10 px-4 sm:px-6 lg:px-8">
+            <div className="max-w-3xl mx-auto bg-white p-8 border border-blue-200 shadow-sm rounded-lg space-y-4">
+                <h1 className="text-3xl font-bold mb-4 text-black">Post Details</h1>
+                <p className="text-gray-800"><strong className="text-gray-900">Start Location:</strong> {post.startLocation}</p>
+                <p className="text-gray-800"><strong className="text-gray-900">End Location:</strong> {post.endLocation}</p>
+                <p className="text-gray-800"><strong className="text-gray-900">Start Time:</strong> {formatTime(post.startTime)}</p>
+                <p className="text-gray-800"><strong className="text-gray-900">End Time:</strong> {formatTime(post.endTime)}</p>
+                <p className="text-gray-800"><strong className="text-gray-900">Estimated Time:</strong> {calculateTimeDifference(post.startTime, post.endTime)}</p>
+                <p className="text-gray-800"><strong className="text-gray-900">Car Model:</strong> {post.carModel}</p>
+                <p className="text-gray-800"><strong className="text-gray-900">Car Year:</strong> {post.carYear}</p>
+                <p className="text-gray-800"><strong className="text-gray-900">Car Color:</strong> <span className="inline-block w-6 h-6 rounded-full ml-2" style={{ backgroundColor: post.carColor }}></span></p>
+                <p className="text-gray-800"><strong className="text-gray-900">Message:</strong> {post.message}</p>
+                <p className="text-gray-800"><strong className="text-gray-900">Remarks:</strong> {post.remarks}</p>
+                <p className="text-gray-800"><strong className="text-gray-900">Status:</strong> {post.status}</p>
             </div>
         </main>
     );

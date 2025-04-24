@@ -35,7 +35,7 @@ const PostListPage: React.FC = () => {
     }, [posts]);
     const handleComplete = useCallback((id: string) => {
         const updatedPosts = posts.map(post =>
-            post.id === id ? { ...post, status: 'completed' } : post
+            post.id === id ? { ...post, status: 'completed' as const } : post
         );
         setPosts(updatedPosts);
         localStorage.setItem('posts', JSON.stringify(updatedPosts));
@@ -43,7 +43,7 @@ const PostListPage: React.FC = () => {
     }, [posts]);
     const handlePin = useCallback((id: string) => {
         const updatedPosts = posts.map(post =>
-            post.id === id ? { ...post, status: 'pinned' } : post
+            post.id === id ? { ...post, status: 'pinned' as const } : post
         );
         setPosts(updatedPosts);
         localStorage.setItem('posts', JSON.stringify(updatedPosts));

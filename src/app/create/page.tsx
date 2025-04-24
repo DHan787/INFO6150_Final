@@ -12,6 +12,14 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import carModels from '../../data/carModels.json';
+
+type ErrorFields = {
+    carYear?: string;
+    carColor?: string;
+    startLocation?: string;
+    endLocation?: string;
+};
+
 const CreatePostPage: React.FC = () => {
     const router = useRouter();
     const [startLocation, setStartLocation] = useState('');
@@ -24,7 +32,7 @@ const CreatePostPage: React.FC = () => {
     const [carColor, setCarColor] = useState('');
     const [message, setMessage] = useState('');
     const [remarks, setRemarks] = useState('');
-    const [errors, setErrors] = useState<any>({});
+    const [errors, setErrors] = useState<ErrorFields>({});
     const localNow = new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16);
     const validColors = ["red", "yellow", "white", "green", "blue", "gray", "black", "orange", "other"];
     const validateCarYear = (year: string) => {
@@ -105,7 +113,7 @@ const CreatePostPage: React.FC = () => {
         }
     };
     return (
-        <div>
+        <div className="text-gray-800">
             <div className="w-full max-w-lg mx-auto p-6 bg-white rounded-lg shadow-lg mt-10">
                 <h2 className="text-2xl font-bold text-center mb-6">Create Form</h2>
                 <form onSubmit={handleSubmit} className="space-y-4">
@@ -119,7 +127,7 @@ const CreatePostPage: React.FC = () => {
                             onChange={(e) => {
                                 setStartLocation(e.target.value);
                                 const err = validateLocation(e.target.value);
-                                setErrors((prev: unknown) => ({ ...prev, startLocation: err }));
+                                setErrors((prev) => ({ ...prev, startLocation: err }));
                             }}
                             className="w-full p-2.5 border border-gray-300 rounded-md"
                             placeholder="Enter start location"
@@ -137,7 +145,7 @@ const CreatePostPage: React.FC = () => {
                             onChange={(e) => {
                                 setEndLocation(e.target.value);
                                 const err = validateLocation(e.target.value);
-                                setErrors((prev: unknown) => ({ ...prev, endLocation: err }));
+                                setErrors((prev) => ({ ...prev, endLocation: err }));
                             }}
                             className="w-full p-2.5 border border-gray-300 rounded-md"
                             placeholder="Enter end location"
@@ -201,7 +209,7 @@ const CreatePostPage: React.FC = () => {
                                 disabled={!carBrand}
                             >
                                 <option value="">Select Model</option>
-                                {carBrand && carModels[carBrand].map((model: string) => (
+                                {carBrand && carModels[carBrand as keyof typeof carModels].map((model: string) => (
                                     <option key={model} value={model}>{model}</option>
                                 ))}
                             </select>
@@ -218,7 +226,7 @@ const CreatePostPage: React.FC = () => {
                                 onChange={(e) => {
                                     setCarYear(e.target.value);
                                     const err = validateCarYear(e.target.value);
-                                    setErrors((prev: unknown) => ({ ...prev, carYear: err }));
+                                    setErrors((prev) => ({ ...prev, carYear: err }));
                                 }}
                                 className="w-full p-2.5 border border-gray-300 rounded-md"
                                 placeholder="Enter car year"

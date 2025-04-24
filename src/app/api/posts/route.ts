@@ -6,15 +6,38 @@
 import { NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
+import { expireOutdatedPosts } from './cron';
 
 const filePath = path.join(process.cwd(), 'public', 'posts.json');
 
 export async function GET() {
     try {
+        await expireOutdatedPosts();
         const data = fs.readFileSync(filePath, 'utf-8');
         return NextResponse.json(JSON.parse(data || '[]'));
     } catch {
         return NextResponse.json({ error: 'Failed to read data.' }, { status: 500 });
+    }
+}
+
+export async function PUT(req: Request) {
+    try {
+        const { id, status } = await req.json();
+        if (!id || !status) {
+            return NextResponse.json({ error: 'Missing id or status' }, { status: 400 });
+        }
+
+        const data = fs.readFileSync(filePath, 'utf-8');
+        const posts: Post[] = JSON.parse(data || '[]');
+
+        const updatedPosts = posts.map(post =>
+            post.id === id ? { ...post, status } : post
+        );
+
+        fs.writeFileSync(filePath, JSON.stringify(updatedPosts, null, 2));
+        return NextResponse.json({ success: true });
+    } catch {
+        return NextResponse.json({ error: 'Failed to update post' }, { status: 500 });
     }
 }
 

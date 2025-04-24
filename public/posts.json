@@ -1,17 +1,5 @@
 [
   {
-    "id": "3",
-    "startLocation": "Sunnyvale",
-    "endLocation": "Stanford",
-    "time": "2025-04-20T04:45",
-    "carModel": "Tesla Model 3",
-    "carYear": "2022",
-    "carColor": "White",
-    "message": "Call for details",
-    "remarks": "Quiet ride",
-    "status": "active"
-  },
-  {
     "id": "4",
     "startLocation": "Oakland",
     "endLocation": "San Francisco",
@@ -21,31 +9,7 @@
     "carColor": "Silver",
     "message": "Reach me via Telegram: ford_ride",
     "remarks": "Can bring pets",
-    "status": "active"
-  },
-  {
-    "id": "5",
-    "startLocation": "Palo Alto",
-    "endLocation": "Mountain View",
-    "time": "2025-04-24T12:15",
-    "carModel": "Chevrolet Malibu",
-    "carYear": "2017",
-    "carColor": "Gray",
-    "message": "Slack: chevy_driver",
-    "remarks": "3 seats available",
-    "status": "active"
-  },
-  {
-    "id": "6",
-    "startLocation": "Dublin",
-    "endLocation": "Livermore",
-    "time": "2025-04-25T07:30",
-    "carModel": "Hyundai Elantra",
-    "carYear": "2021",
-    "carColor": "Red",
-    "message": "Contact on Line: hyundai123",
-    "remarks": "Music friendly",
-    "status": "active"
+    "status": "pinned"
   },
   {
     "id": "1744760515710",
@@ -216,7 +180,7 @@
     "carColor": "red",
     "message": "",
     "remarks": "",
-    "status": "active"
+    "status": "expired"
   },
   {
     "id": "1745130116867",
@@ -230,21 +194,7 @@
     "carColor": "red",
     "message": "",
     "remarks": "",
-    "status": "active"
-  },
-  {
-    "id": "1745130300019",
-    "startLocation": "oakland",
-    "endLocation": "castro valley",
-    "startTime": "2025-04-20T14:24",
-    "endTime": "2025-04-20T16:24",
-    "carBrand": "Toyota",
-    "carModel": "Corolla",
-    "carYear": "1900",
-    "carColor": "red",
-    "message": "",
-    "remarks": "",
-    "status": "active"
+    "status": "expired"
   },
   {
     "id": "1745130388131",
@@ -258,7 +208,7 @@
     "carColor": "red",
     "message": "",
     "remarks": "",
-    "status": "active"
+    "status": "expired"
   },
   {
     "id": "1745130627932",
@@ -272,7 +222,7 @@
     "carColor": "yellow",
     "message": "",
     "remarks": "",
-    "status": "active"
+    "status": "expired"
   },
   {
     "id": "1745134054827",
@@ -286,7 +236,7 @@
     "carColor": "yellow",
     "message": "",
     "remarks": "",
-    "status": "active"
+    "status": "expired"
   },
   {
     "id": "1745134229876",
@@ -300,7 +250,7 @@
     "carColor": "yellow",
     "message": "",
     "remarks": "",
-    "status": "active"
+    "status": "expired"
   },
   {
     "id": "1745138820390",
@@ -314,21 +264,7 @@
     "carColor": "gray",
     "message": "",
     "remarks": "",
-    "status": "active"
-  },
-  {
-    "id": "1745150121245",
-    "startLocation": "11111b",
-    "endLocation": "castro valley",
-    "startTime": "2025-04-20T04:56",
-    "endTime": "2025-04-20T04:58",
-    "carBrand": "Toyota",
-    "carModel": "Corolla",
-    "carYear": "1900",
-    "carColor": "gray",
-    "message": "",
-    "remarks": "",
-    "status": "active"
+    "status": "expired"
   },
   {
     "id": "1745353841836",
@@ -342,7 +278,7 @@
     "carColor": "black",
     "message": "",
     "remarks": "",
-    "status": "active"
+    "status": "expired"
   },
   {
     "id": "1745359016282",
@@ -356,6 +292,6 @@
     "carColor": "red",
     "message": "123",
     "remarks": "123",
-    "status": "active"
+    "status": "expired"
   }
 ]
