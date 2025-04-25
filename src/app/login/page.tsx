@@ -42,6 +42,7 @@ const Page: React.FC = () => {
         localStorage.setItem('jwt', 'simulated-jwt-token');
         alert('Login successful!');
         localStorage.setItem('adminLoggedIn', 'true');
+        console.log('Login data:', loginData);
         router.push('/admin');
     };
     const handleGuestModeClick = () => {

@@ -3,9 +3,10 @@
  * @Date: 2025-04-22 13:47:10
  * @Description: 
  */
-import React from "react";
+'use client';
 
-import { notFound } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { useParams } from 'next/navigation';
 
 interface Post {
     id: string;
@@ -21,15 +22,28 @@ interface Post {
     status: 'active' | 'completed' | 'pinned';
 }
 
-async function fetchPost(id: string): Promise<Post | null> {
-    const res = await fetch('http://localhost:3000/api/posts', { cache: 'no-store' });
-    const data = await res.json();
-    return data.find((post: Post) => post.id === id) || null;
-}
+// Define a safe intermediate type to avoid using `any` explicitly in ESLint.
+type RawPost = Omit<Post, 'status'> & { status: string };
 
-export default async function PostDetailPage({ params }: { params: { id: string } }) {
-    const post = await fetchPost(params.id);
-    if (!post) return notFound();
+export default function Page() {
+    const params = useParams();
+    const [post, setPost] = useState<Post | null>(null);
+
+    useEffect(() => {
+        async function fetchData() {
+            if (typeof params.id === 'string') {
+                const res = await fetch('http://localhost:3000/api/posts', { cache: 'no-store' });
+                const rawData = await res.json();
+                const data = (rawData as RawPost[]).map((p) => ({
+                    ...p,
+                    status: p.status as 'active' | 'completed' | 'pinned',
+                })) as Post[];
+                const found = data.find((p: Post) => p.id === params.id);
+                setPost(found || null);
+            }
+        }
+        fetchData();
+    }, [params]);
 
     const formatTime = (timeStr: string) => {
         const date = new Date(timeStr);
@@ -50,6 +64,8 @@ export default async function PostDetailPage({ params }: { params: { id: string 
         const minutes = Math.floor((diffInMs % (1000 * 60 * 60)) / (1000 * 60));
         return `${hours}h ${minutes}m`;
     };
+
+    if (!post) return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
 
     return (
         <main className="min-h-screen bg-gray-50 py-10 px-4 sm:px-6 lg:px-8">

@@ -11,6 +11,36 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import '../styles/bubbles.css';
+import axios from 'axios';
+
+<style jsx global>{`
+  .perspective {
+    perspective: 1000px;
+  }
+  .card3d {
+    transition: transform 0.7s;
+    transform-style: preserve-3d;
+  }
+  .card-front, .card-back {
+    backface-visibility: hidden;
+  }
+  .card-back {
+    transform: rotateY(180deg);
+  }
+  @keyframes float {
+    0% {
+      transform: translateY(0);
+      opacity: 1;
+    }
+    100% {
+      transform: translateY(-40px);
+      opacity: 0;
+    }
+  }
+  .animate-float {
+    animation: float 4s infinite;
+  }
+`}</style>
 
 type Post = {
     id: string;
@@ -31,11 +61,59 @@ export default function HomePage() {
     const [posts, setPosts] = useState<Post[]>([]);
     const [bubbles, setBubbles] = useState<Bubble[]>([]);
     const [now, setNow] = useState(Date.now());
+    const [weather, setWeather] = useState<{
+        temp: number;
+        description: string;
+        icon: string;
+        hourly: { time: string[]; temperature_2m: number[] };
+        daily: { time: string[]; temperature_2m_max: number[]; temperature_2m_min: number[] };
+    } | null>(null);
     useEffect(() => {
         fetch('/api/posts')
             .then(res => res.json())
             .then(data => setPosts(data))
             .catch(err => console.error('Failed to fetch posts:', err));
+    }, []);
+    useEffect(() => {
+        navigator.geolocation.getCurrentPosition(async (position) => {
+            const { latitude, longitude } = position.coords;
+            try {
+                const response = await axios.get(
+                    `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true&hourly=temperature_2m&daily=temperature_2m_max,temperature_2m_min&timezone=auto`
+                );
+                const current = response.data.current_weather;
+                const hourly = response.data.hourly;
+                const daily = response.data.daily;
+                const weatherCodeMap: Record<number, { label: string; icon: string }> = {
+                    0: { label: 'Clear sky', icon: '☀️' },
+                    1: { label: 'Mainly clear', icon: '🌤️' },
+                    2: { label: 'Partly cloudy', icon: '⛅' },
+                    3: { label: 'Overcast', icon: '☁️' },
+                    45: { label: 'Fog', icon: '🌫️' },
+                    48: { label: 'Depositing rime fog', icon: '🌁' },
+                    51: { label: 'Light drizzle', icon: '🌦️' },
+                    53: { label: 'Moderate drizzle', icon: '🌦️' },
+                    55: { label: 'Dense drizzle', icon: '🌧️' },
+                    61: { label: 'Slight rain', icon: '🌦️' },
+                    63: { label: 'Moderate rain', icon: '🌧️' },
+                    65: { label: 'Heavy rain', icon: '🌧️' },
+                    71: { label: 'Slight snow', icon: '🌨️' },
+                    73: { label: 'Moderate snow', icon: '🌨️' },
+                    75: { label: 'Heavy snow', icon: '❄️' },
+                    95: { label: 'Thunderstorm', icon: '⛈️' },
+                };
+                const weatherInfo = weatherCodeMap[current.weathercode] || { label: 'Unknown', icon: '❔' };
+                setWeather({
+                    temp: current.temperature,
+                    description: weatherInfo.label,
+                    icon: weatherInfo.icon,
+                    hourly,
+                    daily,
+                });
+            } catch (error) {
+                console.error('Failed to fetch weather:', error);
+            }
+        });
     }, []);
     useEffect(() => {
         const interval = setInterval(() => {
@@ -80,6 +158,41 @@ export default function HomePage() {
     const visiblePosts = [...pinned, ...active];
     return (
         <main className="min-h-screen bg-gray-50 flex flex-col">
+            {weather && (
+                <div className="w-full pt-4 flex justify-center">
+                    <div className="bg-blue-50 rounded-xl shadow p-3 w-full max-w-xl">
+                        <div className="text-center mb-2">
+                            <div className="text-5xl font-extrabold text-gray-900">{weather.temp.toFixed(1)}°C</div>
+                            <div className="text-lg text-gray-700 flex items-center justify-center gap-2 mt-1">
+                                <span>{weather.description}</span>
+                                <span className="text-2xl">{weather.icon}</span>
+                            </div>
+                        </div>
+                        <div className="mb-2">
+                            <div className="text-xs font-semibold text-gray-600 mb-1">Next 6 Hours</div>
+                            <div className="grid grid-cols-6 gap-1 text-sm text-center text-gray-800">
+                                {weather.hourly.time.slice(0, 6).map((t, i) => (
+                                    <div key={t} className="bg-white rounded border border-gray-200 py-1">
+                                        <div className="text-gray-600">{new Date(t).getHours()}:00</div>
+                                        <div>{weather.hourly.temperature_2m[i].toFixed(1)}°</div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                        <div>
+                            <div className="text-xs font-semibold text-gray-600 mb-1">Next 3 Days</div>
+                            <div className="grid grid-cols-3 gap-2 text-sm text-center text-gray-800">
+                                {weather.daily.time.slice(0, 3).map((d, i) => (
+                                    <div key={d} className="bg-white rounded border border-gray-200 py-1">
+                                        <div className="text-gray-600">{new Date(d).toLocaleDateString(undefined, { weekday: 'short' })}</div>
+                                        <div>{weather.daily.temperature_2m_min[i].toFixed(1)}° / {weather.daily.temperature_2m_max[i].toFixed(1)}°</div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
             <div className="flex-1 flex px-[15%] py-6">
                 <div className="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {visiblePosts
@@ -98,42 +211,63 @@ export default function HomePage() {
                             const isExpired = timeDiff <= 0;
                             if (isExpired && post.status !== 'pinned') return null;
                             return (
-                                <div
-                                    key={post.id}
-                                    className="aspect-square border border-blue-200 bg-white rounded-lg p-4 shadow hover:shadow-lg transition flex flex-col justify-between relative"
-                                    style={{ backgroundColor: bgColor }}
-                                >
-                                    {post.status === 'pinned' && (
-                                        <div className="absolute top-2 right-2 text-xl">📌</div>
-                                    )}
-                                    <div>
-                                        <h2 className="text-lg font-semibold mb-2 text-gray-900">{post.title}</h2>
-                                        <p className="text-gray-800"><strong>From:</strong> {post.startLocation}</p>
-                                        <p className="text-gray-800"><strong>To:</strong> {post.endLocation}</p>
-                                        <p className="text-gray-800"><strong>Time:</strong> {post.time}</p>
-                                        {isExpired && (
-                                            <p className="text-sm text-red-600 font-medium">Expired</p>
-                                        )}
+                                <div key={post.id} className="relative perspective group">
+                                    <div className="card3d relative w-full h-full transition-transform duration-700 [transform-style:preserve-3d] [transform:rotateY(0deg)] group-hover:[transform:rotateY(180deg)]">
+                                        <div
+                                            className="card-front absolute inset-0 aspect-square border border-blue-200 bg-white rounded-lg p-4 shadow transition flex flex-col justify-between [backface-visibility:hidden]"
+                                            style={{ backgroundColor: bgColor }}
+                                        >
+                                            {post.status === 'pinned' && (
+                                                <div className="absolute top-2 right-2 text-xl">📌</div>
+                                            )}
+                                            <div>
+                                                <h2 className="text-lg font-semibold mb-2 text-gray-900">{post.title}</h2>
+                                                <p className="text-gray-800"><strong>From:</strong> {post.startLocation}</p>
+                                                <p className="text-gray-800"><strong>To:</strong> {post.endLocation}</p>
+                                                <p className="text-gray-800"><strong>Time:</strong> {post.time}</p>
+                                                {isExpired && (
+                                                    <p className="text-sm text-red-600 font-medium">Expired</p>
+                                                )}
+                                            </div>
+                                            <Link
+                                                href={`/post/${post.id}`}
+                                                className="text-blue-700 mt-2 font-medium hover:underline"
+                                            >
+                                                View Details →
+                                            </Link>
+                                            <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
+                                                {[...Array(10)].map((_, i) => (
+                                                    <div key={i} className="absolute w-1 h-1 rounded-full bg-blue-200 animate-float" style={{
+                                                        left: `${Math.random() * 100}%`,
+                                                        top: `${Math.random() * 100}%`,
+                                                        animationDelay: `${Math.random() * 5}s`,
+                                                    }} />
+                                                ))}
+                                            </div>
+                                            {/* Bubble */}
+                                            {bubbles
+                                                .filter(b => b.postId === post.id)
+                                                .map(bubble => (
+                                                    <div
+                                                        key={bubble.id}
+                                                        className="bubble"
+                                                        style={{
+                                                            top: `${bubble.top}%`,
+                                                            left: `${bubble.left}%`,
+                                                        }}
+                                                    />
+                                                ))}
+                                        </div>
+                                        <div
+                                            className="card-back absolute inset-0 aspect-square bg-blue-100 rounded-lg p-4 text-center text-sm text-gray-800 flex flex-col justify-center items-center [transform:rotateY(180deg)] [backface-visibility:hidden]"
+                                        >
+                                            <div className="text-lg font-semibold mb-2">Summary</div>
+                                            <p className="mb-2">This ride is available and monitored.</p>
+                                            <Link href={`/post/${post.id}`} className="text-blue-700 hover:underline">
+                                                View Full Details →
+                                            </Link>
+                                        </div>
                                     </div>
-                                    <Link
-                                        href={`/post/${post.id}`}
-                                        className="text-blue-700 mt-2 font-medium hover:underline"
-                                    >
-                                        View Details →
-                                    </Link>
-                                    {/* Bubble */}
-                                    {bubbles
-                                        .filter(b => b.postId === post.id)
-                                        .map(bubble => (
-                                            <div
-                                                key={bubble.id}
-                                                className="bubble"
-                                                style={{
-                                                    top: `${bubble.top}%`,
-                                                    left: `${bubble.left}%`,
-                                                }}
-                                            />
-                                        ))}
                                 </div>
                             );
                         })}
