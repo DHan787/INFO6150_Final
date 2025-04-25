@@ -1,15 +1,11 @@
+/*
+ * @Author: Jiang Han
+ * @Date: 2025-04-23 22:54:58
+ * @Description: 
+ */
 import fs from 'fs';
 import path from 'path';
-
-type Post = {
-    id: string;
-    title: string;
-    startLocation: string;
-    endLocation: string;
-    startTime: string;
-    endTime: string;
-    status: 'active' | 'pinned' | 'completed' | 'expired';
-};
+import { Post } from '@/types/post';
 
 const filePath = path.join(process.cwd(), 'public', 'posts.json');
 

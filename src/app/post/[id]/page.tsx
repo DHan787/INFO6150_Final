@@ -14,6 +14,7 @@ interface Post {
     endLocation: string;
     startTime: string;
     endTime: string;
+    carBrand: string;
     carModel: string;
     carYear: string;
     carColor: string;
@@ -32,7 +33,7 @@ export default function Page() {
     useEffect(() => {
         async function fetchData() {
             if (typeof params.id === 'string') {
-                const res = await fetch('http://localhost:3000/api/posts', { cache: 'no-store' });
+                const res = await fetch('/api/posts', { cache: 'no-store' });
                 const rawData = await res.json();
                 const data = (rawData as RawPost[]).map((p) => ({
                     ...p,

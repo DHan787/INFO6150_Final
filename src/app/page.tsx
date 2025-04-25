@@ -47,7 +47,9 @@ type Post = {
     title: string;
     startLocation: string;
     endLocation: string;
-    time: string;
+    startTime: string;
+    endTime: string;
+    carModel: string;
     createdAt: number;
     status: 'active' | 'completed' | 'pinned';
 };
@@ -68,10 +70,18 @@ export default function HomePage() {
         hourly: { time: string[]; temperature_2m: number[] };
         daily: { time: string[]; temperature_2m_max: number[]; temperature_2m_min: number[] };
     } | null>(null);
+    const [searchQuery, setSearchQuery] = useState('');
     useEffect(() => {
         fetch('/api/posts')
             .then(res => res.json())
-            .then(data => setPosts(data))
+            .then(data => {
+                if (Array.isArray(data)) {
+                    setPosts(data);
+                } else {
+                    console.error('Invalid posts data format:', data);
+                    setPosts([]);
+                }
+            })
             .catch(err => console.error('Failed to fetch posts:', err));
     }, []);
     useEffect(() => {
@@ -124,8 +134,8 @@ export default function HomePage() {
     // const handleAdminClick = () => {
     //     window.location.href = '/login';
     // };
-    const calculateTimeDiff = (postTime: string) => {
-        return new Date(postTime).getTime() - now;
+    const calculateTimeDiff = (endTime: string) => {
+        return new Date(endTime).getTime() - now;
     };
     // Bubble loop
     useEffect(() => {
@@ -134,10 +144,10 @@ export default function HomePage() {
             const activePost = posts
                 .filter(p => p.status !== 'completed')
                 .filter(p => {
-                    const diff = calculateTimeDiff(p.time);
+                    const diff = calculateTimeDiff(p.endTime);
                     return diff > 0 && diff <= oneHour;
                 })
-                .sort((a, b) => calculateTimeDiff(a.time) - calculateTimeDiff(b.time))[0];
+                .sort((a, b) => calculateTimeDiff(a.endTime) - calculateTimeDiff(b.endTime))[0];
             if (activePost) {
                 const newBubble: Bubble = {
                     id: `${activePost.id}-${Math.random()}`,
@@ -155,7 +165,18 @@ export default function HomePage() {
     }, [posts]);
     const pinned = posts.filter(p => p.status === 'pinned');
     const active = posts.filter(p => p.status === 'active');
-    const visiblePosts = [...pinned, ...active];
+    const allVisiblePosts = [...pinned, ...active];
+    const filteredPosts = allVisiblePosts
+        .filter((post) =>
+            post.startLocation.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            post.endLocation.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            post.carModel.toLowerCase().includes(searchQuery.toLowerCase())
+        )
+        .sort((a, b) => {
+            if (a.status === 'pinned' && b.status !== 'pinned') return -1;
+            if (a.status !== 'pinned' && b.status === 'pinned') return 1;
+            return calculateTimeDiff(a.endTime) - calculateTimeDiff(b.endTime);
+        });
     return (
         <main className="min-h-screen bg-gray-50 flex flex-col">
             {weather && (
@@ -193,86 +214,107 @@ export default function HomePage() {
                     </div>
                 </div>
             )}
-            <div className="flex-1 flex px-[15%] py-6">
-                <div className="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {visiblePosts
-                        .sort((a, b) => calculateTimeDiff(a.time) - calculateTimeDiff(b.time))
-                        .map(post => {
-                            const timeDiff = calculateTimeDiff(post.time);
-                            const oneHour = 60 * 60 * 1000;
-                            const isNearOneHour = timeDiff > 0 && timeDiff <= oneHour;
-                            const progress = isNearOneHour ? 1 - (timeDiff / oneHour) : 0;
-                            const lightBlue = { r: 219, g: 234, b: 254 }; // Tailwind's blue-100
-                            const pink = { r: 251, g: 207, b: 232 }; // Tailwind's pink-200
-                            const r = Math.round(lightBlue.r + (pink.r - lightBlue.r) * progress);
-                            const g = Math.round(lightBlue.g + (pink.g - lightBlue.g) * progress);
-                            const b = Math.round(lightBlue.b + (pink.b - lightBlue.b) * progress);
-                            const bgColor = `rgb(${r}, ${g}, ${b})`;
-                            const isExpired = timeDiff <= 0;
-                            if (isExpired && post.status !== 'pinned') return null;
-                            return (
-                                <div key={post.id} className="relative perspective group">
-                                    <div className="card3d relative w-full h-full transition-transform duration-700 [transform-style:preserve-3d] [transform:rotateY(0deg)] group-hover:[transform:rotateY(180deg)]">
-                                        <div
-                                            className="card-front absolute inset-0 aspect-square border border-blue-200 bg-white rounded-lg p-4 shadow transition flex flex-col justify-between [backface-visibility:hidden]"
-                                            style={{ backgroundColor: bgColor }}
-                                        >
-                                            {post.status === 'pinned' && (
-                                                <div className="absolute top-2 right-2 text-xl">📌</div>
-                                            )}
-                                            <div>
-                                                <h2 className="text-lg font-semibold mb-2 text-gray-900">{post.title}</h2>
-                                                <p className="text-gray-800"><strong>From:</strong> {post.startLocation}</p>
-                                                <p className="text-gray-800"><strong>To:</strong> {post.endLocation}</p>
-                                                <p className="text-gray-800"><strong>Time:</strong> {post.time}</p>
-                                                {isExpired && (
-                                                    <p className="text-sm text-red-600 font-medium">Expired</p>
-                                                )}
-                                            </div>
-                                            <Link
-                                                href={`/post/${post.id}`}
-                                                className="text-blue-700 mt-2 font-medium hover:underline"
+            <div className="flex justify-center pt-6">
+                <input
+                    type="text"
+                    placeholder="Search by location or car model..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="border border-gray-300 rounded-lg px-4 py-2 w-1/2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 placeholder-gray-500 text-gray-900"
+                />
+            </div>
+            <div className="flex-1 w-full px-6 flex justify-center mt-4">
+                <div className="w-full max-w-screen-xl mx-auto">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 place-items-center w-full">
+                        {filteredPosts
+                            .map(post => {
+                                const timeDiff = calculateTimeDiff(post.endTime);
+                                const oneHour = 60 * 60 * 1000;
+                                const isNearOneHour = timeDiff > 0 && timeDiff <= oneHour;
+                                const progress = isNearOneHour ? 1 - (timeDiff / oneHour) : 0;
+                                const lightBlue = { r: 219, g: 234, b: 254 }; // Tailwind's blue-100
+                                const pink = { r: 251, g: 207, b: 232 }; // Tailwind's pink-200
+                                const r = Math.round(lightBlue.r + (pink.r - lightBlue.r) * progress);
+                                const g = Math.round(lightBlue.g + (pink.g - lightBlue.g) * progress);
+                                const b = Math.round(lightBlue.b + (pink.b - lightBlue.b) * progress);
+                                const bgColor = `rgb(${r}, ${g}, ${b})`;
+                                const isExpired = timeDiff <= 0;
+                                if (isExpired && post.status !== 'pinned') return null;
+                                return (
+                                    <div key={post.id} className="relative perspective group">
+                                        <div className="card3d relative w-[220px] h-[220px] transition-transform duration-700 [transform-style:preserve-3d] [transform:rotateY(0deg)] group-hover:[transform:rotateY(180deg)]">
+                                            <div
+                                                className="card-front absolute inset-0 w-[180px] h-[180px] border border-blue-200 bg-white rounded-lg p-4 shadow transition flex flex-col justify-between [backface-visibility:hidden]"
+                                                style={{ backgroundColor: bgColor }}
                                             >
-                                                View Details →
-                                            </Link>
-                                            <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
-                                                {[...Array(10)].map((_, i) => (
-                                                    <div key={i} className="absolute w-1 h-1 rounded-full bg-blue-200 animate-float" style={{
-                                                        left: `${Math.random() * 100}%`,
-                                                        top: `${Math.random() * 100}%`,
-                                                        animationDelay: `${Math.random() * 5}s`,
-                                                    }} />
-                                                ))}
+                                                {post.status === 'pinned' && (
+                                                    <div className="absolute top-2 right-2 text-xl">📌</div>
+                                                )}
+                                                <div>
+                                                    <h2 className="text-lg font-semibold mb-2 text-gray-900">{post.title}</h2>
+                                                    <p className="text-gray-800"><strong>From:</strong> {post.startLocation}</p>
+                                                    <p className="text-gray-800"><strong>To:</strong> {post.endLocation}</p>
+                                                    <p className="text-gray-800">
+                                                        <strong>Remaining:</strong> {formatRemainingTime(post.endTime, now)}
+                                                    </p>
+                                                    {isExpired && (
+                                                        <p className="text-sm text-red-600 font-medium">Expired</p>
+                                                    )}
+                                                </div>
+                                                <Link
+                                                    href={`/post/${post.id}`}
+                                                    className="text-blue-700 mt-2 font-medium hover:underline"
+                                                >
+                                                    View Details →
+                                                </Link>
+                                                <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
+                                                    {[...Array(10)].map((_, i) => (
+                                                        <div key={i} className="absolute w-1 h-1 rounded-full bg-blue-200 animate-float" style={{
+                                                            left: `${Math.random() * 100}%`,
+                                                            top: `${Math.random() * 100}%`,
+                                                            animationDelay: `${Math.random() * 5}s`,
+                                                        }} />
+                                                    ))}
+                                                </div>
+                                                {/* Bubble */}
+                                                {bubbles
+                                                    .filter(b => b.postId === post.id)
+                                                    .map(bubble => (
+                                                        <div
+                                                            key={bubble.id}
+                                                            className="bubble"
+                                                            style={{
+                                                                top: `${bubble.top}%`,
+                                                                left: `${bubble.left}%`,
+                                                            }}
+                                                        />
+                                                    ))}
                                             </div>
-                                            {/* Bubble */}
-                                            {bubbles
-                                                .filter(b => b.postId === post.id)
-                                                .map(bubble => (
-                                                    <div
-                                                        key={bubble.id}
-                                                        className="bubble"
-                                                        style={{
-                                                            top: `${bubble.top}%`,
-                                                            left: `${bubble.left}%`,
-                                                        }}
-                                                    />
-                                                ))}
-                                        </div>
-                                        <div
-                                            className="card-back absolute inset-0 aspect-square bg-blue-100 rounded-lg p-4 text-center text-sm text-gray-800 flex flex-col justify-center items-center [transform:rotateY(180deg)] [backface-visibility:hidden]"
-                                        >
-                                            <div className="text-lg font-semibold mb-2">Summary</div>
-                                            <p className="mb-2">This ride is available and monitored.</p>
-                                            <Link href={`/post/${post.id}`} className="text-blue-700 hover:underline">
-                                                View Full Details →
-                                            </Link>
+                                            <div
+                                                className="card-back absolute inset-0 w-[180px] h-[180px] bg-blue-100 rounded-lg p-4 text-center text-sm text-gray-800 flex flex-col justify-center items-center [transform:rotateY(180deg)] [backface-visibility:hidden]"
+                                            >
+                                                <div className="text-lg font-semibold mb-2">Summary</div>
+                                                <p className="mb-2">This ride is available and monitored.</p>
+                                                <Link href={`/post/${post.id}`} className="text-blue-700 hover:underline">
+                                                    View Full Details →
+                                                </Link>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                            );
-                        })}
+                                );
+                            })}
+                    </div>
                 </div>
             </div>
         </main>
     );
 }
+
+const formatRemainingTime = (endTime: string, now: number): string => {
+    const diff = new Date(endTime).getTime() - now;
+    if (diff <= 0) return 'Expired';
+    const minutes = Math.floor(diff / 60000);
+    const hours = Math.floor(minutes / 60);
+    const remMinutes = minutes % 60;
+    return `${hours}h ${remMinutes}m`;
+};

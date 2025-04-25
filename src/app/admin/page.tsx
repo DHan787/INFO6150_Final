@@ -7,19 +7,22 @@ type Post = {
     id: string;
     startLocation: string;
     endLocation: string;
-    time: string;
+    startTime: string;
+    endTime: string;
+    carBrand: string;
     carModel: string;
     carYear: string;
     carColor: string;
     message: string;
     remarks: string;
-    status: string;
+    status: 'active' | 'pinned' | 'completed';
 };
 
 export default function AdminPage() {
     const [posts, setPosts] = useState<Post[]>([]);
     const [pinnedPosts, setPinnedPosts] = useState<Post[]>([]);
     const [loading, setLoading] = useState(true);  // Loading state
+    const [now, setNow] = useState<number | null>(null);
     const router = useRouter();
 
     useEffect(() => {
@@ -35,10 +38,12 @@ export default function AdminPage() {
                     setPinnedPosts(pinned);
                     setPosts(others);
                     setLoading(false);
+                    setNow(Date.now());
                 })
                 .catch(err => {
                     console.error("Failed to fetch posts:", err);
                     setLoading(false);
+                    setNow(Date.now());
                 });
         }
     }, [router]);
@@ -61,45 +66,56 @@ export default function AdminPage() {
         }
     };
 
-    const handlePin = async (id: string) => {
+    const handleTogglePin = async (id: string, status: 'active' | 'pinned') => {
         try {
             const res = await fetch('/api/posts', {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ id, status: 'pinned' }),
+                body: JSON.stringify({ id, status }),
             });
             if (res.ok) {
-                const pinnedPost = posts.find(p => p.id === id);
-                if (pinnedPost) {
-                    setPinnedPosts(prev => [...prev, { ...pinnedPost, status: 'pinned' }]);
-                    setPosts(prev => prev.filter(p => p.id !== id));
+                if (status === 'pinned') {
+                    const target = posts.find(p => p.id === id);
+                    if (target) {
+                        setPinnedPosts(prev => [...prev, { ...target, status: 'pinned' }]);
+                        setPosts(prev => prev.filter(p => p.id !== id));
+                    }
+                } else {
+                    const target = pinnedPosts.find(p => p.id === id);
+                    if (target) {
+                        setPosts(prev => [...prev, { ...target, status: 'active' }]);
+                        setPinnedPosts(prev => prev.filter(p => p.id !== id));
+                    }
                 }
             } else {
-                console.error('Failed to pin post');
+                console.error('Failed to update pin status');
             }
         } catch (err) {
-            console.error('Error pinning post:', err);
+            console.error('Error updating pin status:', err);
         }
     };
 
-    const calculateTimeDiff = (postTime: string) => {
-        const postDate = new Date(postTime);
-        const now = new Date();
-        const diff = postDate.getTime() - now.getTime();
-        return diff;
+    const calculateTimeDiff = (postStartTime: string) => {
+        if (now === null) return 0;
+        const postDate = new Date(postStartTime);
+        return postDate.getTime() - now;
     };
-
-    // Sort posts by time
-    const sortedPosts = posts.sort((a, b) => {
-        return new Date(b.time).getTime() - new Date(a.time).getTime();
-    });
-
-    const expiredPosts = sortedPosts.filter(post => calculateTimeDiff(post.time) < 0);
-    const upcomingPosts = sortedPosts.filter(post => calculateTimeDiff(post.time) >= 0);
 
     if (loading) {
         return <div className="min-h-screen flex justify-center items-center">Loading...</div>;
     }
+
+    if (now === null) {
+        return <div className="min-h-screen flex justify-center items-center">Preparing time data...</div>;
+    }
+
+    // Sort posts by time
+    const sortedPosts = posts.sort((a, b) => {
+        return new Date(b.startTime).getTime() - new Date(a.startTime).getTime();
+    });
+
+    const expiredPosts = sortedPosts.filter(post => calculateTimeDiff(post.startTime) < 0);
+    const upcomingPosts = sortedPosts.filter(post => calculateTimeDiff(post.startTime) >= 0);
 
     return (
         <main className="min-h-screen bg-gray-100 px-[15%] py-10 relative">
@@ -120,9 +136,18 @@ export default function AdminPage() {
                         pinnedPosts.map((post: Post) => (
                             <Link key={post.id} href={`/post/${post.id}`} className="bg-blue-50 border border-blue-200 p-4 rounded shadow block hover:shadow-md transition">
                                 <h3 className="font-semibold text-blue-900">From: {post.startLocation} to {post.endLocation}</h3>
-                                <p className="text-blue-800">Time: {post.time}</p>
+                                <p className="text-blue-800">Time: {post.startTime}</p>
                                 <p className="text-blue-800">Contact: {post.message}</p>
-                                <div className="mt-2 flex justify-end">
+                                <div className="mt-2 flex justify-end space-x-2">
+                                    <button
+                                        className="px-3 py-1 bg-yellow-100 text-yellow-800 rounded hover:bg-yellow-200 transition"
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            handleTogglePin(post.id, 'active');
+                                        }}
+                                    >
+                                        Unpin
+                                    </button>
                                     <button
                                         className="px-3 py-1 bg-red-100 text-red-800 rounded hover:bg-red-200 transition"
                                         onClick={(e) => {
@@ -146,9 +171,9 @@ export default function AdminPage() {
                         return (
                             <Link key={post.id} href={`/post/${post.id}`} className="bg-blue-50 border border-blue-200 p-4 rounded shadow relative block hover:shadow-md transition">
                                 <h3 className="font-semibold text-blue-900">From: {post.startLocation} to {post.endLocation}</h3>
-                                <p className="text-blue-800">Time: {post.time}</p>
+                                <p className="text-blue-800">Time: {post.startTime}</p>
                                 <p className="text-blue-800">Contact: {post.message}</p>
-                                {new Date(post.time) < new Date() && (
+                                {calculateTimeDiff(post.startTime) < 0 && (
                                     <p className="text-sm text-red-600 font-medium">Expired</p>
                                 )}
                                 <div className="mt-4 flex justify-between space-x-2">
@@ -156,7 +181,7 @@ export default function AdminPage() {
                                         className="px-3 py-1 bg-blue-100 text-blue-800 rounded hover:bg-blue-200 transition"
                                         onClick={(e) => {
                                             e.preventDefault();
-                                            handlePin(post.id);
+                                            handleTogglePin(post.id, 'pinned');
                                         }}
                                     >
                                         Pin
@@ -183,8 +208,8 @@ export default function AdminPage() {
             </section>
 
             <section>
-                <h2 className="text-xl font-semibold mb-2">📩 Requests for Pin</h2>
-                <div className="bg-white p-4 rounded shadow">No new requests.</div>
+                <h2 className="text-xl font-semibold mb-2 text-black">📩 Requests for Pin</h2>
+                <div className="bg-white p-4 rounded shadow text-black">No new requests.</div>
             </section>
         </main>
     );

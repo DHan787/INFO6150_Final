@@ -13,6 +13,8 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import carModels from '../../data/carModels.json';
 
+
+
 type ErrorFields = {
     carYear?: string;
     carColor?: string;
@@ -107,7 +109,7 @@ const CreatePostPage: React.FC = () => {
             body: JSON.stringify(postData),
         });
         if (res.ok) {
-            router.push('/post');
+            router.push('/');
         } else {
             alert('Failed to create post.');
         }

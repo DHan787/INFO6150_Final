@@ -1,13 +1,20 @@
+/*
+ * @Author: Jiang Han
+ * @Date: 2025-04-22 14:00:42
+ * @Description: 
+ */
 'use client';
 
 import React from 'react';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 
 export default function Header() {
     const pathname = usePathname();
+    const router = useRouter();
 
     const isCreatePage = pathname === '/create';
     const isAdminPage = pathname.startsWith('/admin');
+    const isHomePage = pathname === '/';
 
     return (
         <header className="bg-gray-800 text-white flex justify-between items-center px-4 py-2">
@@ -15,6 +22,14 @@ export default function Header() {
                 Pin Car
             </h1>
             <div className="flex gap-2">
+                {!isHomePage && (
+                    <button
+                        className="bg-gray-500 text-white px-3 py-1 rounded hover:bg-gray-600 transition"
+                        onClick={() => router.back()}
+                    >
+                        Back
+                    </button>
+                )}
                 {/* 只在非 create 页显示 */}
                 {!isCreatePage && (
                     <button
