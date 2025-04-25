@@ -177,6 +177,19 @@ export default function HomePage() {
             if (a.status !== 'pinned' && b.status === 'pinned') return 1;
             return calculateTimeDiff(a.endTime) - calculateTimeDiff(b.endTime);
         });
+    // Weather: next 6 hours logic
+    let next6Hours: string[] = [];
+    let currentHourIndex = 0;
+    if (weather?.hourly?.time) {
+        const getLocalHour = (isoString: string) =>
+            new Date(isoString + 'Z').getHours();
+        const nowHour = new Date().getHours();
+        currentHourIndex = weather.hourly.time.findIndex((t) =>
+            getLocalHour(t) === nowHour
+        );
+        if (currentHourIndex === -1) currentHourIndex = 0;
+        next6Hours = weather.hourly.time.slice(currentHourIndex, currentHourIndex + 6) || [];
+    }
     return (
         <main className="min-h-screen bg-gray-50 flex flex-col">
             {weather && (
@@ -192,10 +205,15 @@ export default function HomePage() {
                         <div className="mb-2">
                             <div className="text-xs font-semibold text-gray-600 mb-1">Next 6 Hours</div>
                             <div className="grid grid-cols-6 gap-1 text-sm text-center text-gray-800">
-                                {weather.hourly.time.slice(0, 6).map((t, i) => (
+                                {next6Hours.map((t, i) => (
                                     <div key={t} className="bg-white rounded border border-gray-200 py-1">
-                                        <div className="text-gray-600">{new Date(t).getHours()}:00</div>
-                                        <div>{weather.hourly.temperature_2m[i].toFixed(1)}°</div>
+                                        <div className="text-gray-600">
+                                            {new Date(t + 'Z').toLocaleTimeString(undefined, {
+                                                hour: '2-digit',
+                                                hour12: false,
+                                            })}
+                                        </div>
+                                        <div>{weather.hourly.temperature_2m[currentHourIndex + i].toFixed(1)}°</div>
                                     </div>
                                 ))}
                             </div>
@@ -242,9 +260,9 @@ export default function HomePage() {
                                 if (isExpired && post.status !== 'pinned') return null;
                                 return (
                                     <div key={post.id} className="relative perspective group">
-                                        <div className="card3d relative w-[220px] h-[220px] transition-transform duration-700 [transform-style:preserve-3d] [transform:rotateY(0deg)] group-hover:[transform:rotateY(180deg)]">
+                                        <div className="card3d relative w-[240px] h-[260px] transition-transform duration-700 [transform-style:preserve-3d] [transform:rotateY(0deg)] group-hover:[transform:rotateY(180deg)]">
                                             <div
-                                                className="card-front absolute inset-0 w-[180px] h-[180px] border border-blue-200 bg-white rounded-lg p-4 shadow transition flex flex-col justify-between [backface-visibility:hidden]"
+                                                className="card-front absolute inset-0 w-[240px] h-[260px] border border-blue-200 bg-white rounded-lg p-5 shadow transition flex flex-col justify-between [backface-visibility:hidden]"
                                                 style={{ backgroundColor: bgColor }}
                                             >
                                                 {post.status === 'pinned' && (
@@ -254,6 +272,7 @@ export default function HomePage() {
                                                     <h2 className="text-lg font-semibold mb-2 text-gray-900">{post.title}</h2>
                                                     <p className="text-gray-800"><strong>From:</strong> {post.startLocation}</p>
                                                     <p className="text-gray-800"><strong>To:</strong> {post.endLocation}</p>
+                                                    <p className="text-gray-800"><strong>Car Model:</strong> {post.carModel}</p>
                                                     <p className="text-gray-800">
                                                         <strong>Remaining:</strong> {formatRemainingTime(post.endTime, now)}
                                                     </p>
@@ -291,7 +310,7 @@ export default function HomePage() {
                                                     ))}
                                             </div>
                                             <div
-                                                className="card-back absolute inset-0 w-[180px] h-[180px] bg-blue-100 rounded-lg p-4 text-center text-sm text-gray-800 flex flex-col justify-center items-center [transform:rotateY(180deg)] [backface-visibility:hidden]"
+                                                className="card-back absolute inset-0 w-[240px] h-[260px] bg-blue-100 rounded-lg p-5 text-center text-sm text-gray-800 flex flex-col justify-center items-center [transform:rotateY(180deg)] [backface-visibility:hidden]"
                                             >
                                                 <div className="text-lg font-semibold mb-2">Summary</div>
                                                 <p className="mb-2">This ride is available and monitored.</p>

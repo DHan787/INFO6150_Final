@@ -118,14 +118,14 @@ export default function AdminPage() {
     const upcomingPosts = sortedPosts.filter(post => calculateTimeDiff(post.startTime) >= 0);
 
     return (
-        <main className="min-h-screen bg-gray-100 px-[15%] py-10 relative">
+        <main className="min-h-screen bg-white px-[15%] py-10 relative" lang="en">
             <button
                 className="mb-4 bg-gray-700 text-white px-4 py-2 rounded hover:bg-gray-600 transition"
                 onClick={() => router.push('/')}
             >
                 ← Back to Home
             </button>
-            <h1 className="text-3xl font-bold mb-6 text-custom-red">Admin Dashboard</h1>
+            <h1 className="text-3xl font-bold mb-6 text-red-800">Admin Dashboard</h1>
 
             <section className="mb-10">
                 <h2 className="text-xl font-semibold mb-2 text-black">📌 Pinned Posts</h2>
@@ -136,11 +136,11 @@ export default function AdminPage() {
                         pinnedPosts.map((post: Post) => (
                             <Link key={post.id} href={`/post/${post.id}`} className="bg-blue-50 border border-blue-200 p-4 rounded shadow block hover:shadow-md transition">
                                 <h3 className="font-semibold text-blue-900">From: {post.startLocation} to {post.endLocation}</h3>
-                                <p className="text-blue-800">Time: {post.startTime}</p>
-                                <p className="text-blue-800">Contact: {post.message}</p>
+                                <p className="text-blue-900">Time: {post.startTime}</p>
+                                <p className="text-blue-900">Contact: {post.message}</p>
                                 <div className="mt-2 flex justify-end space-x-2">
                                     <button
-                                        className="px-3 py-1 bg-yellow-100 text-yellow-800 rounded hover:bg-yellow-200 transition"
+                                        className="px-3 py-1 bg-yellow-100 text-yellow-900 rounded hover:bg-yellow-200 transition"
                                         onClick={(e) => {
                                             e.preventDefault();
                                             handleTogglePin(post.id, 'active');
@@ -149,7 +149,7 @@ export default function AdminPage() {
                                         Unpin
                                     </button>
                                     <button
-                                        className="px-3 py-1 bg-red-100 text-red-800 rounded hover:bg-red-200 transition"
+                                        className="px-3 py-1 bg-red-100 text-red-900 rounded hover:bg-red-200 transition"
                                         onClick={(e) => {
                                             e.preventDefault();
                                             handleDelete(post.id);
@@ -171,14 +171,14 @@ export default function AdminPage() {
                         return (
                             <Link key={post.id} href={`/post/${post.id}`} className="bg-blue-50 border border-blue-200 p-4 rounded shadow relative block hover:shadow-md transition">
                                 <h3 className="font-semibold text-blue-900">From: {post.startLocation} to {post.endLocation}</h3>
-                                <p className="text-blue-800">Time: {post.startTime}</p>
-                                <p className="text-blue-800">Contact: {post.message}</p>
+                                <p className="text-blue-900">Time: {post.startTime}</p>
+                                <p className="text-blue-900">Contact: {post.message}</p>
                                 {calculateTimeDiff(post.startTime) < 0 && (
                                     <p className="text-sm text-red-600 font-medium">Expired</p>
                                 )}
                                 <div className="mt-4 flex justify-between space-x-2">
                                     <button
-                                        className="px-3 py-1 bg-blue-100 text-blue-800 rounded hover:bg-blue-200 transition"
+                                        className="px-3 py-1 bg-blue-100 text-blue-900 rounded hover:bg-blue-200 transition"
                                         onClick={(e) => {
                                             e.preventDefault();
                                             handleTogglePin(post.id, 'pinned');
@@ -187,12 +187,12 @@ export default function AdminPage() {
                                         Pin
                                     </button>
                                     <button
-                                        className="px-3 py-1 bg-green-100 text-green-800 rounded hover:bg-green-200 transition"
+                                        className="px-3 py-1 bg-green-100 text-green-900 rounded hover:bg-green-200 transition"
                                     >
                                         Mark Complete
                                     </button>
                                     <button
-                                        className="px-3 py-1 bg-red-100 text-red-800 rounded hover:bg-red-200 transition"
+                                        className="px-3 py-1 bg-red-100 text-red-900 rounded hover:bg-red-200 transition"
                                         onClick={(e) => {
                                             e.preventDefault();
                                             handleDelete(post.id);
@@ -205,11 +205,6 @@ export default function AdminPage() {
                         );
                     })}
                 </div>
-            </section>
-
-            <section>
-                <h2 className="text-xl font-semibold mb-2 text-black">📩 Requests for Pin</h2>
-                <div className="bg-white p-4 rounded shadow text-black">No new requests.</div>
             </section>
         </main>
     );
