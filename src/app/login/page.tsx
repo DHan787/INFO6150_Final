@@ -53,12 +53,6 @@ const Page: React.FC = () => {
     return (
         <section className="bg-gray-50 flex flex-col min-h-screen overflow-hidden">
             <div className="flex flex-col h-screen">
-                <header className="bg-gray-800 text-white">
-                    <hr className="border-t-2 border-gray-500 mb-4" />
-                    <h1 className="text-2xl font-extrabold text-custom-red text-left ml-2" style={{ fontFamily: 'Lobster, cursive' }}>
-                        Pin Car
-                    </h1>
-                </header>
                 <div className="flex-grow flex items-center justify-center px-6 py-8 mx-auto overflow-hidden">
                     <div className="flex flex-col md:flex-col bg-white rounded-lg shadow-lg p-6 space-y-4 md:space-y-4">
                         <div className="flex justify-center items-center">
@@ -125,17 +119,6 @@ const Page: React.FC = () => {
                         </div>
                     </div>
                 </div>
-                <footer className="bg-gray-800 text-white text-center py-4 mt-6">
-                    <hr className="border-t-2 border-gray-500 mb-4" />
-                    <div className="space-x-6">
-                        <a href="/conditions-of-use" className="text-sm hover:underline">Conditions of Use</a>
-                        <a href="/privacy-notice" className="text-sm hover:underline">Privacy Notice</a>
-                        <a href="/help" className="text-sm hover:underline">Help</a>
-                    </div>
-                    <div className="mt-4 text-sm">
-                        © 2025, Pin Car.com
-                    </div>
-                </footer>
             </div>
         </section>
     );
